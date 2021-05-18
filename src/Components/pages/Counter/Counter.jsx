@@ -1,11 +1,17 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { Button } from 'antd'
-import { convertTimeToString } from '../../../utils'
+import { convertTimeToString, usePrevious } from '../../../utils'
 import Circle from './Circle'
 const CounterWrapper = styled.section`
 	height: calc(100vh - 60px);
 	padding-top: 80px;
+	user-select: none;
+	svg:active {
+		box-shadow: 5px 5px 15px 5px #d3d3d3;
+		border-radius: 50%;
+	}
+
 	button {
 		margin: 40px auto;
 		display: block;
@@ -16,45 +22,71 @@ const CounterWrapper = styled.section`
 	}
 `
 
-function Counter({ startTime }) {
-	const [timeText, setTimeText] = useState(convertTimeToString(startTime))
+let timer
+function Counter({ startTime, setModal, addPomodoro, changeCycle }) {
 	const [isCounting, setIsCounting] = useState(false)
-	const [time, setTime] = useState(startTime)
-	const intervalRef = useRef()
+	const [time, setTime] = useState({ text: convertTimeToString(startTime), inSeconds: startTime })
+	const prevTime = usePrevious(startTime)
+	const updateTime = newTime => setTime({ text: convertTimeToString(newTime), inSeconds: newTime })
 
-	const toogleTimer = () => {
-		debugger
-		if (isCounting) {
-			console.log('parando', isCounting)
-			clearInterval(intervalRef.current)
-			intervalRef.current = null
-		} else {
-			console.log('iniciando')
-			startTimer(time)
+	const startTimer = _ => {
+		if (isRestart()) {
+			updateTime(startTime)
+			//workaround to react closures and state updates
+			time.inSeconds = startTime
 		}
+
+		timer = setInterval(() => {
+			updateTime(--time.inSeconds)
+			if (time.inSeconds <= 0) {
+				stopTimer()
+				addPomodoro()
+				changeCycle()
+			}
+		}, 1000)
+	}
+	const stopTimer = () => {
+		clearInterval(timer)
+		timer = null
+		setIsCounting(false)
+	}
+	const toogleTimer = () => {
+		isCounting ? stopTimer() : startTimer()
 		setIsCounting(!isCounting)
 	}
 
-	const startTimer = startTime => {
-		let newTime = startTime
-		const timer = setInterval(() => {
-			setTimeText(convertTimeToString(--newTime))
-			setTime(newTime)
-			if (newTime <= 0) {
-				toogleTimer()
-			}
-		}, 1000)
+	const isRestart = () => time.inSeconds <= 0
 
-		intervalRef.current = timer
-	}
+	useEffect(
+		_ => {
+			console.log(prevTime, startTime)
+			if (prevTime && prevTime !== startTime) {
+				if (isCounting) {
+					setModal({
+						visible: true,
+						text: 'We detected a change in the settings. That will restart the timer.'
+					})
+				}
+
+				updateTime(startTime)
+				stopTimer()
+			}
+		},
+		[startTime, isCounting, prevTime, setModal, addPomodoro]
+	)
 
 	return (
 		<CounterWrapper>
+			<Circle
+				maxValue={startTime}
+				onClick={toogleTimer}
+				isCounting={isCounting}
+				time={time.inSeconds}
+				text={time.text}
+			/>
 			<Button onClick={() => toogleTimer()}>
 				{isCounting ? 'Stop the timer' : 'Start the timer'}
 			</Button>
-
-			<Circle onClick={toogleTimer} isCounting={isCounting} time={time} text={timeText} />
 		</CounterWrapper>
 	)
 }

@@ -11,7 +11,12 @@ const Wrapper = styled.div`
 const Canvas = props => {
 	return (
 		<Wrapper onClick={props.onClick}>
-			<CircularProgressbar strokeWidth={5} value={props.time} maxValue={60} text={props.text} />
+			<CircularProgressbar
+				strokeWidth={5}
+				value={props.time}
+				maxValue={props.maxValue}
+				text={props.text}
+			/>
 		</Wrapper>
 	)
 }

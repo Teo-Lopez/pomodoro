@@ -1,23 +1,56 @@
 import 'antd/dist/antd.css'
 import './App.css'
-import { Tabs } from 'antd'
+import { Tabs, Modal } from 'antd'
 import Counter from './pages/Counter/Counter'
 import Settings from './pages/Settings/Settings'
+import { useState } from 'react'
+import CustomModal from './shared/Modal'
+import Streak from './pages/Streak/Streak'
 
 function App() {
 	const { TabPane } = Tabs
+	const [settings, setSettings] = useState({
+		cycle: { long: 60 * 25, short: 60 * 5, current: 'long' }
+	})
+	const [streak, setStreak] = useState({ pomodoros: { completed: 0 }, totalTime: 0 })
+	const [modal, setModal] = useState({ text: '', visible: false, children: null })
+
+	const addPomodoro = () =>
+		setStreak({
+			pomodoros: { completed: streak.pomodoros.completed + 1 },
+			totalTime: streak.totalTime + settings.cycle.long
+		})
+	const changeCycle = () =>
+		updateSettings({ cycle: { current: settings.cycle.current === 'long' ? 'short' : 'long' } })
+
+	const updateSettings = newSettings =>
+		setSettings({ cycle: { ...settings.cycle, ...newSettings.cycle } })
+
 	return (
-		<Tabs onChange={e => console.log('changing', e)} type='card'>
-			<TabPane tab='Counter' key='1'>
-				<Counter startTime={10} />
-			</TabPane>
-			<TabPane tab='Settings' key='2'>
-				<Settings />
-			</TabPane>
-			<TabPane tab='Tasks' key='3'>
-				Content of Tab Pane 3
-			</TabPane>
-		</Tabs>
+		<>
+			<Tabs onChange={e => console.log('changing', e)} type='card'>
+				<TabPane tab='Counter' key='1'>
+					<Counter
+						setModal={setModal}
+						startTime={
+							settings.cycle.current === 'long' ? settings.cycle.long : settings.cycle.short
+						}
+						cycle={settings.cycle.current}
+						changeCycle={changeCycle}
+						addPomodoro={addPomodoro}
+					/>
+				</TabPane>
+				<TabPane tab='Settings' key='2'>
+					<Settings updateSettings={updateSettings} />
+				</TabPane>
+				<TabPane tab='Streak' key='3'>
+					<Streak streak={streak} />
+				</TabPane>
+			</Tabs>
+			<CustomModal text={modal.text} setModal={setModal} visible={modal.visible}>
+				{modal.children}
+			</CustomModal>
+		</>
 	)
 }
 
