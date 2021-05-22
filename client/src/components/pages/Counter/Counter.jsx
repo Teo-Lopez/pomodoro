@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { Button } from 'antd'
 import { convertTimeToString, usePrevious } from '../../../utils'
 import Circle from './Circle'
+
 const CounterWrapper = styled.section`
 	height: calc(100vh - 60px);
 	padding-top: 80px;
@@ -23,12 +24,19 @@ const CounterWrapper = styled.section`
 `
 
 let timer
-function Counter({ startTime, setModal, addPomodoro, changeCycle }) {
+function Counter({ startTime, setModal, addPomodoro, changeCycle, loggedUser }) {
 	const [isCounting, setIsCounting] = useState(false)
 	const [time, setTime] = useState({ text: convertTimeToString(startTime), inSeconds: startTime })
 	const prevTime = usePrevious(startTime)
 	const updateTime = newTime => setTime({ text: convertTimeToString(newTime), inSeconds: newTime })
+	
+	/** Main control function. */
+	const toogleTimer = () => {
+		isCounting ? stopTimer() : startTimer()
+		setIsCounting(!isCounting)
+	}
 
+	/** Start timer interval. Should not be called outside of toogleTimer */
 	const startTimer = _ => {
 		if (isRestart()) {
 			updateTime(startTime)
@@ -50,16 +58,12 @@ function Counter({ startTime, setModal, addPomodoro, changeCycle }) {
 		timer = null
 		setIsCounting(false)
 	}
-	const toogleTimer = () => {
-		isCounting ? stopTimer() : startTimer()
-		setIsCounting(!isCounting)
-	}
 
 	const isRestart = () => time.inSeconds <= 0
 
+	/** Checks if restarting the timer is needed */
 	useEffect(
 		_ => {
-			console.log(prevTime, startTime)
 			if (prevTime && prevTime !== startTime) {
 				if (isCounting) {
 					setModal({
@@ -84,6 +88,7 @@ function Counter({ startTime, setModal, addPomodoro, changeCycle }) {
 				time={time.inSeconds}
 				text={time.text}
 			/>
+			{loggedUser && <p>{loggedUser.currentTask?.name}</p>}
 			<Button onClick={() => toogleTimer()}>
 				{isCounting ? 'Stop the timer' : 'Start the timer'}
 			</Button>

@@ -1,5 +1,10 @@
 import { useRef, useEffect } from 'react'
 
+/**
+ * Number formatter
+ * @param {Number} time
+ * @returns {String} A string with mm:ss format
+ */
 export const convertTimeToString = time => {
 	const secs = Math.floor(time % 60)
 		.toString()
@@ -10,6 +15,11 @@ export const convertTimeToString = time => {
 	return minutes + ':' + secs
 }
 
+/**
+ * Keeps a reference for a previous state value
+ * @param {Any} value
+ * @returns {Any} ref.current The previous value of the param.
+ */
 export function usePrevious(value) {
 	const ref = useRef()
 	useEffect(() => {

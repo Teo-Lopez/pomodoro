@@ -11,16 +11,20 @@ class AuthService {
 		})
 	}
 
-	login({ username, email, password }) {
-		return this.service.post('login', { username, email, password }) //add form
+	login({ email, password }) {
+		return this.service.post('login', { email, password }) //add form
 	}
 
-	signup({ username, email, password }) {
-		return this.service.post('signup', { username, email, password }) //add form
+	signup({ email, password }) {
+		return this.service.post('signup', { email, password }) //add form
 	}
 
 	logout() {
 		return this.service.post('logout')
+	}
+
+	editUser({ user, currentTask }) {
+		return this.service.put('', { user, currentTask })
 	}
 
 	loggedin() {

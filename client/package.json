@@ -19,8 +19,9 @@
 		"styled-components": "^5"
 	},
 	"scripts": {
-		"start": "REACT_APP_API_URI=localhost:5000 react-scripts start",
+		"start": "REACT_APP_API_URI=http://localhost:5000 react-scripts start",
 		"build": "react-scripts build",
+		"docs": "jsdoc -c jsdoc.conf.json",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject"
 	},
